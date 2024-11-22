@@ -3,7 +3,7 @@ import dataBot from './values.js'
 
 const bot = new TelegramBot(dataBot.token, { polling: true });
 
-bot.on('photo', (msg) => {
+bot.on('message', (msg) => {
     const chatId = msg.chat.id; 
     const messageId = msg.message_id; 
 
