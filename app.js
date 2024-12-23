@@ -13,3 +13,5 @@ bot.on('message', (msg) => {
             .catch(err => console.error(`Помилка пересилання на ID ${targetId}:`, err));
     });
 });
+
+
