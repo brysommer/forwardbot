@@ -5,6 +5,7 @@ const bot = new TelegramBot(dataBot.token, { polling: true });
 
 const mediaGroups = new Map();
 
+
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const messageId = msg.message_id;
@@ -16,7 +17,10 @@ bot.on('message', (msg) => {
             if (!mediaGroups.has(msg.media_group_id)) {
                 mediaGroups.set(msg.media_group_id, []);
             }
-            mediaGroups.get(msg.media_group_id).push({ chatId, messageId });
+            mediaGroups.get(msg.media_group_id).push({
+                type: 'photo',
+                media: msg.photo[msg.photo.length - 1].file_id // Використовуємо file_id
+            });
 
             // Чекаємо на закінчення збору медіа (наприклад, 1 секунда)
             setTimeout(() => {
@@ -25,19 +29,16 @@ bot.on('message', (msg) => {
                     mediaGroups.delete(msg.media_group_id); // Очистка після пересилання
                     // Пересилаємо галерею
                     dataBot.targetIds.forEach(targetId => {
-                        bot.sendMediaGroup(targetId, mediaGroup.map(item => ({
-                            type: 'photo',
-                            media: item.messageId
-                        })))
-                        .then(() => console.log(`Галерея переслана на ID ${targetId}`))
-                        .catch(err => console.error(`Помилка пересилання галереї на ID ${targetId}:`, err));
+                        bot.sendMediaGroup(targetId, mediaGroup)
+                            .then(() => console.log(`Галерея переслана на ID ${targetId}`))
+                            .catch(err => console.error(`Помилка пересилання галереї на ID ${targetId}:`, err));
                     });
                 }
             }, 1000);
         } else {
             // Якщо це окреме фото, пересилаємо одразу
             dataBot.targetIds.forEach(targetId => {
-                bot.forwardMessage(targetId, chatId, messageId)
+                bot.sendPhoto(targetId, msg.photo[msg.photo.length - 1].file_id)
                     .then(() => console.log(`Фото переслано на ID ${targetId}`))
                     .catch(err => console.error(`Помилка пересилання фото на ID ${targetId}:`, err));
             });
@@ -51,5 +52,3 @@ bot.on('message', (msg) => {
         });
     }
 });
-
-
